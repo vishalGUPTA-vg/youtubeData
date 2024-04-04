@@ -2,8 +2,6 @@ package job
 
 import (
 	"context"
-	"flag"
-	"fmt"
 	"log"
 	"net/http"
 	config "youtubedata/config/configs"
@@ -18,20 +16,24 @@ import (
 )
 
 func YoutubeJob() {
-	flag.Parse()
+	// Get configuration
 	cnf := config.Get()
-
+	// Get YouTube API keys from configuration
 	keys := cnf.YoutubeApiKeys
+	// Initialize index for accessing API keys
 	keyIndex := 0
+	// Set initial time for API call
 	initalTime := "2024-04-03T00:00:00Z"
 	for i := 0; i <= 2; i++ {
+		// Initialize context
 		var ctx context.Context
+		// Create a new YouTube service client using the current API key
 		service, err := youtube.NewService(ctx, option.WithAPIKey(keys[keyIndex]))
 		if err != nil {
 			log.Fatalf("Error creating new YouTube client: %v", err)
 		}
 
-		// Make the API call to YouTube.
+		// Make the API call to search for football videos published after the initial time
 		call := service.Search.List([]string{"snippet"}).
 			Q("football").
 			MaxResults(50).
@@ -39,46 +41,59 @@ func YoutubeJob() {
 			PublishedAfter(initalTime).
 			Type("video")
 
+			// Execute the API call
 		response, err := call.Do()
 		if err != nil {
-			fmt.Println("error not able process", zap.Any("err", err))
+
+			// Check if the error is due to an API key issue
 			if response.HTTPStatusCode == http.StatusForbidden {
-				fmt.Println("Error making API call:", err)
+				log.Println("Error making API call:", err)
 				if keyIndex < len(keys)-1 {
-					keyIndex++ // Switch to the next API key if the current one expires
+					// Switch to the next API key if the current one expires
+					keyIndex++
 					continue
 				}
 
 				//break the loop if all api key have expired
 				if keyIndex == len(keys)-1 {
-					fmt.Println("all api keys have expired ", err)
+					log.Println("all api keys have expired ", err)
 					break
 				}
 			}
+			// Handle API call errors
+			log.Fatal("error not able connect to youtube", zap.Any("err", err))
+
 			return
 		}
-		fmt.Println(*response)
+		// If API call is successful and there are search results
 		if len(response.Items) > 0 {
+			// Convert API response to models and upsert into the database
 			services := services.NewYouttubeServices()
 			err = services.Upsert(maptomodels(response))
 			if err != nil {
-				fmt.Println("error not able process")
+				log.Println("error unable to upsert")
 			}
 		}
+
+		// Update initial time to current time for the next API call
 		initalTime = time.Now().UTC().Format(time.RFC3339)
 
+		// Pause execution for 10 seconds before next iteration
 		time.Sleep(10 * time.Second)
 	}
 
 }
 
+// maptomodels converts API response to models
 func maptomodels(req *youtube.SearchListResponse) []*models.YouTubeData {
 	var response []*models.YouTubeData
 	for _, val := range req.Items {
+		// Parse published time
 		parsedTime, err := time.Parse("2006-01-02T15:04:05Z", val.Snippet.PublishedAt)
 		if err != nil {
-			fmt.Println("error not able process ", err)
+			log.Println("error not able process ", err)
 		}
+		// Map API response to models
 		res := &models.YouTubeData{
 			IdKind:                 val.Id.Kind,
 			IdVideoId:              val.Id.VideoId,

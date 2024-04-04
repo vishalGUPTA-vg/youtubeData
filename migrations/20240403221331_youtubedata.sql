@@ -21,6 +21,10 @@ CREATE TABLE IF NOT EXISTS "youtubedata" (
    "publish_time" TIMESTAMP,
    CONSTRAINT youtube_data PRIMARY KEY (id_video_id)
 );
+
+
+CREATE INDEX discription_search_idx ON youtubedata USING gin (description);
+CREATE INDEX tile_search_idx ON youtubedata USING gin (title);
 -- +goose StatementEnd
 -- +goose Down
 -- +goose StatementBegin

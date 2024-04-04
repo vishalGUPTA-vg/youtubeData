@@ -24,7 +24,7 @@ func YoutubeJob() {
 	keyIndex := 0
 	// Set initial time for API call
 	initalTime := "2024-04-03T00:00:00Z"
-	for i := 0; i <= 2; i++ {
+	for {
 		// Initialize context
 		var ctx context.Context
 		// Create a new YouTube service client using the current API key

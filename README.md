@@ -17,12 +17,12 @@ Postman https://www.postman.com/downloads/
 
 ### API for peginated respone 
 method Get 
-handler /youtube/videos
+handler http://localhost:8080/youtube/videos
 query param: pg=<page number>
 
 
 ### API for search filter
 
 method Get 
-handler /youtube/search/videos"
+handler http://localhost:8080/youtube/search/videos"
 query param: q="<search query >" 

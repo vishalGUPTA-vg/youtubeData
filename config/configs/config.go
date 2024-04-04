@@ -11,7 +11,6 @@ type Config struct {
 	Env            string   `json:"env"`
 	Port           string   `json:"port"`
 	DatabaseURL    string   `json:"database_url"`
-	MaxDBConn      int      `json:"max_db_conn"`
 	ItemsPerPage   int      `json:"items_per_page"`
 	YoutubeApiKeys []string `json:"youtube_api_keys"`
 }

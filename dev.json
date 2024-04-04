@@ -3,7 +3,6 @@
     "app_name": "controltower-api",
     "port": "8080",
     "database_url": "postgresql://root:secret@postgres:5432/youtube?sslmode=disable",
-    "max_db_conn": 5,
     "items_per_page": 10,
     "youtube_api_keys":["AIzaSyC7ydM1VS513s_3S-B0HVTCpWQdLdgf1r8"]
  } 
